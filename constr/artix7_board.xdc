@@ -49,6 +49,6 @@ set_property -dict { PACKAGE_PIN M2   IOSTANDARD LVCMOS33 } [get_ports { mode_b 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {clk27_5150_IBUF}];
 
 #False paths
-set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks clk_out1_clk_wiz_0_2] -group [get_clocks -include_generated_clocks clk_out1_gen_pal_74_25_1]
+set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks clk_out1_clk_wiz_0_2] -group [get_clocks -include_generated_clocks clk_out1_gen_pal_74_25]
 set_false_path -through [get_pins -hierarchical *master_serdes/RST]
 set_false_path -through [get_pins -hierarchical *slave_serdes/RST]
