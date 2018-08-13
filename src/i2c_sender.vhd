@@ -14,12 +14,13 @@ use IEEE.NUMERIC_STD.ALL;
 entity i2c_sender is
     Port ( clk    : in    STD_LOGIC;    
            resend : in    STD_LOGIC;
-           sioc   : out   STD_LOGIC;
+           sioc   : inout STD_LOGIC;
            siod   : inout STD_LOGIC
     );
 end i2c_sender;
 
 architecture Behavioral of i2c_sender is
+   signal   sioc_int          : std_logic := '0';
    signal   divider           : unsigned(7 downto 0)  := (others => '0'); 
     -- this value gives nearly 200ms cycles before the first register is written
    signal   initial_pause     : unsigned(7 downto 0) := (others => '0');
@@ -68,9 +69,19 @@ i2c_tristate: process(data_sr, tristate_sr)
          siod <= 'Z';
       end if;
    end process;
+
+i2c_tristate2: process(sioc_int)
+      begin
+   
+   if sioc_int = '0' then
+      sioc <= '0';
+         else
+      sioc <= 'Z';
+         end if;
+   end process;
    
    with divider(divider'length-1 downto divider'length-2) 
-      select sioc <= clk_first_quarter(clk_first_quarter'length -1) when "00",
+      select sioc_int <= clk_first_quarter(clk_first_quarter'length -1) when "00",
                      clk_last_quarter(clk_last_quarter'length -1)   when "11",
                      '1' when others;
                      
