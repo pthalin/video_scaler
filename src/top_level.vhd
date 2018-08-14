@@ -43,10 +43,10 @@ entity top_level is
          VBLK5150: in std_logic;
 
          SDA5150: inout STD_LOGIC;
-         SCL5150 : out STD_LOGIC;
+         SCL5150 : inout STD_LOGIC;
          reset5150 : out std_logic;
         mode_a : in std_logic;
-        mode_b : in std_logic;
+--        mode_b : in std_logic;
 
         hdmi_tx_clk_p : out std_logic;
         hdmi_tx_clk_n : out std_logic;
@@ -59,7 +59,6 @@ architecture Behavioral of top_level is
     signal clk_pixel_x1  : std_logic;
     signal clk_pixel_x5  : std_logic;
     signal clk_pixel_27  : std_logic;
-    signal clk_pixel_13_5  : std_logic;
     signal crystal27 : std_logic;
     signal clk74_17 : std_logic;
     signal clk74_25 : std_logic;
@@ -115,6 +114,8 @@ architecture Behavioral of top_level is
     signal locked_mmcme: std_logic;
     signal ps_request: std_logic;
     signal inc_dec: std_logic;
+
+    constant mode_b: std_logic := '0';
 
    component clk_wiz_0 is
 
@@ -337,7 +338,7 @@ component i2c_sender
 port (
            clk    : in    STD_LOGIC;
            resend : in    STD_LOGIC;
-           sioc   : out   STD_LOGIC;
+           sioc   : inout   STD_LOGIC;
            siod   : inout STD_LOGIC
 );
 end component;
@@ -429,24 +430,24 @@ reset_controller : reset_control
       );
     -- genetate 270M clock from 27M
 
-          mult270 : clk_wiz_1
+--          mult270 : clk_wiz_1
 
-          port map (
-                   clk_out1 => clk270M,
+--          port map (
+--                   clk_out1 => clk270M,
 
-                    reset => '0',
-                    locked => open,
-                    clk_in1 => crystal27
-            );
+--                    reset => '0',
+--                    locked => open,
+--                    clk_in1 => crystal27
+--            );
 
       -- generate 27M clock from 50M
 
                     GEN27 : clk_wiz_2
 
                     port map (
-                             clk_out1 => crystal27,
-
-                             clk_out2 =>  clk_pixel_13_5,
+                              clk_out1 => crystal27,
+                              --clk_out2 =>  open,
+                              clk_out2 =>  clk270M,
                               reset => '0',
                               locked => locked,
                               clk_in1 => clk50
