@@ -47,7 +47,8 @@ entity top_level is
          reset5150 : out std_logic;
         mode_a : in std_logic;
 --        mode_b : in std_logic;
-
+        led : out std_logic;
+        
         hdmi_tx_clk_p : out std_logic;
         hdmi_tx_clk_n : out std_logic;
         hdmi_tx_p     : out std_logic_vector(2 downto 0);
@@ -114,8 +115,23 @@ architecture Behavioral of top_level is
     signal locked_mmcme: std_logic;
     signal ps_request: std_logic;
     signal inc_dec: std_logic;
+    
+    signal vsync_stop: std_logic;
 
-    constant mode_b: std_logic := '0';
+    constant mode_b: std_logic := '1'; -- PAL=1 NTSC=0
+    
+
+    component debounce is
+
+     port(
+     
+          clk     : IN  STD_LOGIC; 
+          button  : IN  STD_LOGIC;
+          result  : OUT STD_LOGIC;
+          toggle  : OUT STD_LOGIC
+         ); 
+    end component;
+
 
    component clk_wiz_0 is
 
@@ -394,11 +410,18 @@ reset_controller : reset_control
     );
 
 
+  button_debounce : debounce
 
+  port map (
+           clk => clk_pixel_x1,
+           button => mode_a,
+           result => open,
+           toggle => vsync_stop
+    );
+
+led <= vsync_stop;
 
     -- genetate 74.17M NTSC 720p dotclock from 270M
-
-
 
 
 
@@ -622,7 +645,7 @@ fifo_reader0: fifo_reader port map (
                hsync => hdtv_hsync,
                vsync_in => vsync5150,
                vsync => hdtv_vsync,
-               vsync_stop => mode_a,
+               vsync_stop => vsync_stop,
                fid => fid5150,
                Y_out => Y,
                Cr_out => Cr,

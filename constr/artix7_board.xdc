@@ -59,6 +59,9 @@ set_property -dict {PACKAGE_PIN M4 IOSTANDARD LVCMOS33} [get_ports reset5150]
 set_property -dict {PACKAGE_PIN A8 IOSTANDARD LVCMOS33} [get_ports mode_a]
 #set_property -dict {PACKAGE_PIN K2 IOSTANDARD LVCMOS33} [get_ports mode_b]
 
+#LED
+set_property -dict {PACKAGE_PIN C8 IOSTANDARD LVCMOS33} [get_ports led]
+
 
 
 #[Place 30-876] Port 'clk27_5150'  is assigned to PACKAGE_PIN 'N12'  which can only be used as the N side of a differential clock input.
@@ -70,4 +73,5 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets AVID5150_IBUF]
 set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of_objects [get_nets clk74_25]] -group [get_clocks -include_generated_clocks -of_objects [get_nets clk74_17]]
 set_false_path -through [get_pins -hierarchical *master_serdes/RST]
 set_false_path -through [get_pins -hierarchical *slave_serdes/RST]
+
 

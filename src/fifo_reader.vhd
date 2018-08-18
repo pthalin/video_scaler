@@ -78,7 +78,9 @@ signal filling_enabled : std_logic := '0';
 signal filling_request : std_logic := '0';
 --signal fifo_rden : std_logic :='0';
 
-
+ attribute MARK_DEBUG : string;
+ attribute MARK_DEBUG of y : signal is "TRUE";
+ attribute MARK_DEBUG of x : signal is "TRUE";
 
 begin
 
