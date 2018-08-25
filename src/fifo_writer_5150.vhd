@@ -35,8 +35,8 @@
 
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -48,70 +48,47 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity fifo_writer_5150 is
-
-         PORT (
-
-          clk_pixel_27 : in STD_LOGIC;
-          video601 : in std_logic_vector (7 downto 0);
-
-          AVID: in STD_LOGIC;
---        VSYNC: in STD_LOGIC;
-
---        FID: in STD_LOGIC;
-          VBLK: in std_logic;
-
-          fifo_data : out std_logic_vector (15 downto 0);
-          fifo_wren : out std_logic :='0'
-
-);
+  port (
+    clk_pixel_27 : in  std_logic;
+    video601     : in  std_logic_vector (7 downto 0);
+    AVID         : in  std_logic;
+    VBLK         : in  std_logic;
+    fifo_data    : out std_logic_vector (15 downto 0);
+    fifo_wren    : out std_logic := '0'
+    );
 
 end fifo_writer_5150;
 
-
 architecture Behavioral of fifo_writer_5150 is
 
-signal chroma_delayed : std_logic_vector (7 downto 0);
-signal yc_interleave: std_logic;
-signal vblk_dly: std_logic;
-
-
-begin
-
-vblank_lock_to_first_avid: process (avid)
+  signal chroma_delayed : std_logic_vector (7 downto 0);
+  signal yc_interleave  : std_logic;
+  signal vblk_dly       : std_logic;
 
 begin
 
-     if rising_edge (avid) then
-        vblk_dly <= vblk;
-     end if;
+  vblank_lock_to_first_avid : process (avid)
+  begin
+    if rising_edge (avid) then
+      vblk_dly <= vblk;
+    end if;
+  end process;
 
-end process;
+  fifo_writer_sequencer : process (clk_pixel_27)
+  begin
+    if rising_edge (clk_pixel_27) then
 
+      fifo_wren      <= yc_interleave;
+      chroma_delayed <= video601;
+      fifo_data      <= chroma_delayed & video601;
 
-
-fifo_writer_sequencer:  process (clk_pixel_27)
-begin
-   if rising_edge (clk_pixel_27) then
-
-
-
-
-        fifo_wren <= yc_interleave;
-
-         chroma_delayed <= video601 ;
-         fifo_data <= chroma_delayed & video601;
-
-      if (avid = '0') or (vblk_dly= '1' ) then
-         yc_interleave <= '0';
-    --   fifo_wren <= '0';
-
+      if (avid = '0') or (vblk_dly = '1') then
+        yc_interleave <= '0';
       else
-         yc_interleave <= not yc_interleave;
-
-  --     fifo_data <= chroma_delayed & video601;
+        yc_interleave <= not yc_interleave;
       end if;
-   end if;
-end process;
 
+    end if;
+  end process;
 
 end Behavioral;
