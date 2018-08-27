@@ -50,6 +50,17 @@ end fifo_reader;
 
 architecture Behavioral of fifo_reader is
 
+  constant HDisplay   : integer                       := 1280;
+  constant HSyncStart : integer                       := 1720;
+  constant HSyncEnd   : integer                       := 1760;
+  constant HTotal     : integer                       := 1980;
+  
+  constant VCntOffset : integer                       := 26;
+  constant VDisplay   : integer                       := 720;
+  constant VSyncStart : integer                       := 725;
+  constant VSyncEnd   : integer                       := 730;
+  constant VTotal     : integer                       := 750;
+  
   constant vsync_delay       : integer                       := 40;
   type line_buffer_720 is array (722 downto 1) of std_logic_vector (23 downto 0);
   signal deinterlacer_buffer : line_buffer_720               := (others => (others => '0'));
@@ -153,48 +164,27 @@ begin
     if rising_edge(clk) then
       if (x = 1430) then  -- sync filler controller to ~~about HDTV hsync time
 
-        if (y = 25) or (y > 745) then
+        if (y = (VCntOffset-1)) or (y > (VDisplay + VCntOffset)) then
           -- do buffer prefill for first line.
           -- also flush fifo by dummy reads after frame ends just in case...
           filling_request <= '1';
 
-        elsif (y >= 26) and (y < 720 + 26) then
-
-          -- rules for active parts of HDTV frame
-          if pal_ntsc = '0' then        --- logic for NTSC sdeinterlacer-scaler
-
-            if fid = '0' then           -- first NTSC frame is EVEN
-              if (y < 27) then
-                null;  --repeat prefilled buffer on first 2 lines
-              elsif ((y-26) rem 3) = 1 then  -- (! adjust!!!)
-                -- request next SDTV line and repeat 3 times
-                filling_request <= '1';
-              end if;
-            else                        -- do odd NTSC frame
-              if (((y-28) rem 3) = 1) or (y = 26) or (y = 27) then
-                -- request next SDTV line and repeat 3 times
-                filling_request <= '1';
-              end if;
-            end if;  -- ntsc fid 0/1
-
-          else                          -- logic for PAL deinterlacer-scaler
+        elsif (y >= VCntOffset) and (y < (VDisplay + VCntOffset)) then
+            -- logic for PAL deinterlacer-scaler
 
             if fid = '0' then
-              if (((y-26) rem 5) = 1) or (((y-26) rem 5) = 4) then
+              if (((y-VCntOffset) rem 5) = 1) or (((y-VCntOffset) rem 5) = 4) then
                 -- request next SDTV line and repeat 2 or 3 times
                 filling_request <= '1';
               end if;
             else
-              if (y = 26) or (y = 27) then
+              if (y = VCntOffset) or (y = VCntOffset+1) then
                 null;  --repeat prefilled buffer on first 3 lines
-              elsif (((y-27) rem 5) = 1) or (((y-27) rem 5) = 4) then
+              elsif (((y-VCntOffset+1) rem 5) = 1) or (((y-VCntOffset+1) rem 5) = 4) then
                 -- request next SDTV line and repeat 3 times
                 filling_request <= '1';
               end if;
             end if;  -- pal fid 0/1
-
-          end if;  --pal/ntsc
-
         end if;  -- active frame
 
       else
@@ -249,22 +239,22 @@ begin
   begin
     if rising_edge(clk) then
 
-      if x = 1280-1 then
+      if x = HDisplay-1 then
         blank <= '1';
-      elsif ((x = (1650-1) and (pal_ntsc = '0')) or (x = (1980-1) and (pal_ntsc = '1'))) and (y < 720 and y >= 25) then
+      elsif (x = (HTotal-1)) and (y < (VDisplay + VCntOffset) and y >= VCntOffset) then
         blank <= '0';
       end if;
 
-      if ((x = 1390) and (pal_ntsc = '0')) or ((x = 1720) and (pal_ntsc = '1')) then
+      if (x = HSyncStart) then
         hsync <= '1';
-      elsif ((x = 1430) and (pal_ntsc = '0')) or ((x = 1760) and (pal_ntsc = '1'))then
+      elsif (x = HSyncEnd) then
         hsync <= '0';
       end if;
 
       x_pos <= std_logic_vector (x);
       y_pos <= std_logic_vector (y);
 
-      if (x = (1650-1) and pal_ntsc = '0') or (x = (1980-1) and pal_ntsc = '1') then
+      if (x = (HTotal-1)) then
         x     <= (others => '0');
         x_720 <= x"001";  -- also reset deinterlacer buffer readout counter
 
@@ -274,7 +264,7 @@ begin
           vsync <= '0';
         end if;
 
-        if (((y = 755) or (vsync_delay_timer = vsync_delay)) and vsync_stop = '0') or ((y >= 750) and (vsync_stop = '1')) then
+        if (((y = (VTotal+5)) or (vsync_delay_timer = vsync_delay)) and vsync_stop = '0') or ((y >= VTotal) and (vsync_stop = '1')) then
           -- reset y at max 755 or when real vsync arrived (when hard sync enabled) or at line 750 when DPLL works
           y     <= X"001";
           vsync <= '1';
