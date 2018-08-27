@@ -251,7 +251,7 @@ begin
 
       if x = 1280-1 then
         blank <= '1';
-      elsif ((x = (1650-1) and (pal_ntsc = '0')) or (x = (1980-1) and (pal_ntsc = '1'))) and (y < 720 and y >= 25) then
+      elsif ((x = (1650-1) and (pal_ntsc = '0')) or (x = (1980-1) and (pal_ntsc = '1'))) and (y < (720+26) and y >= 26) then
         blank <= '0';
       end if;
 
