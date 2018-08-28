@@ -1,0 +1,7 @@
+impl
+**/.Xil
+ip/**/**
+!ip/**/.xci
+**.log
+**.jou
+**.str
